@@ -17,7 +17,15 @@ export function Login() {
     try {
       await signIn(email, password);
     } catch (err: any) {
-      setError('Credenciais inválidas ou usuário não encontrado.');
+      if (err.code === 'auth/operation-not-allowed') {
+        setError('O login por e-mail não foi ativado no Console do Firebase.');
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('E-mail ou senha incorretos.');
+      } else if (err.code === 'auth/network-request-failed') {
+        setError('Erro de conexão. Verifique sua internet.');
+      } else {
+        setError('Ocorreu um erro ao tentar entrar. Tente novamente.');
+      }
       console.error(err);
     } finally {
       setIsSubmitting(false);

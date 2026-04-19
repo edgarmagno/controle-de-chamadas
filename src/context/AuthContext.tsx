@@ -27,44 +27,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        const docRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          const data = docSnap.data() as UserProfile;
-          // Security/Consistency: If user is logging with specific email, ensure role matches
-          let targetRole: UserRole = data.role;
-          if (user.email === 'infra@bluetree.com.br') targetRole = 'maintenance';
-          if (user.email === 'gov@bluetree.com.br') targetRole = 'governance';
+      try {
+        setUser(user);
+        if (user) {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
           
-          if (targetRole !== data.role) {
-            await setDoc(docRef, { role: targetRole }, { merge: true });
-            setProfile({ ...data, role: targetRole });
+          if (docSnap.exists()) {
+            const data = docSnap.data() as UserProfile;
+            let targetRole: UserRole = data.role;
+            if (user.email === 'infra@bluetree.com.br') targetRole = 'maintenance';
+            if (user.email === 'gov@bluetree.com.br') targetRole = 'governance';
+            
+            if (targetRole !== data.role) {
+              await setDoc(docRef, { role: targetRole }, { merge: true });
+              setProfile({ ...data, role: targetRole });
+            } else {
+              setProfile(data);
+            }
           } else {
-            setProfile(data);
+            let initialRole: UserRole = 'reception';
+            if (user.email === 'infra@bluetree.com.br') initialRole = 'maintenance';
+            if (user.email === 'gov@bluetree.com.br') initialRole = 'governance';
+
+            const newProfile: UserProfile = {
+              uid: user.uid,
+              name: user.email?.split('@')[0] || 'Usuário',
+              email: user.email || '',
+              role: initialRole,
+              createdAt: new Date().toISOString(),
+            };
+            await setDoc(docRef, newProfile, { merge: true });
+            setProfile(newProfile);
           }
         } else {
-          // Determine initial role based on email mapping
-          let initialRole: UserRole = 'reception';
-          if (user.email === 'infra@bluetree.com.br') initialRole = 'maintenance';
-          if (user.email === 'gov@bluetree.com.br') initialRole = 'governance';
-
-          const newProfile: UserProfile = {
-            uid: user.uid,
-            name: user.email?.split('@')[0] || 'Usuário',
-            email: user.email || '',
-            role: initialRole,
-            createdAt: new Date().toISOString(),
-          };
-          await setDoc(docRef, newProfile);
-          setProfile(newProfile);
+          setProfile(null);
         }
-      } else {
-        setProfile(null);
+      } catch (err) {
+        console.error("Auth profile sync error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return unsubscribe;
