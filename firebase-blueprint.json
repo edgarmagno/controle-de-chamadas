@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access control.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["reception", "governance", "maintenance"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
+    "Ticket": {
+      "title": "Service Ticket",
+      "description": "A service request for governance or maintenance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "roomNumber": { "type": "string" },
+        "department": { "type": "string", "enum": ["governance", "maintenance"] },
+        "description": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
+        "status": { "type": "string", "enum": ["open", "in-progress", "completed", "cancelled"] },
+        "openedBy": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["roomNumber", "department", "description", "priority", "status", "openedBy", "createdAt"]
+    },
+    "Room": {
+      "title": "Hotel Room",
+      "description": "Room/Apartment details.",
+      "type": "object",
+      "properties": {
+        "number": { "type": "string" },
+        "type": { "type": "string" },
+        "floor": { "type": "string" },
+        "status": { "type": "string", "enum": ["available", "occupied", "maintenance", "cleaning"] }
+      },
+      "required": ["number", "type", "floor"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User documents keyed by UID."
+    },
+    "/tickets/{ticketId}": {
+      "schema": "Ticket",
+      "description": "Service tickets collection."
+    },
+    "/rooms/{roomId}": {
+      "schema": "Room",
+      "description": "Hotel rooms collection."
+    }
+  }
+}
