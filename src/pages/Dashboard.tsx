@@ -24,15 +24,17 @@ export function Dashboard() {
   const [searchParams] = useSearchParams();
   const deptFilter = searchParams.get('dept') as Department | null;
   
-  const effectiveRole = profile?.role !== 'reception' ? (profile?.role as Department) : (deptFilter || undefined);
+  // If no filter is in URL, use user's role as default (for Infra/Gov)
+  // If filter IS in URL, use it (allows everyone to see both)
+  const effectiveRole = deptFilter || (profile?.role !== 'reception' ? (profile?.role as Department) : undefined);
   const { tickets, loading } = useTickets(effectiveRole);
   const [showModal, setShowModal] = useState(false);
 
   if (!profile) return null;
 
   return (
-    <div className="space-y-10 pb-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-6 pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 lg:gap-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             {profile.role === 'reception' 
@@ -55,7 +57,7 @@ export function Dashboard() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard 
           label="Chamados Ativos" 
           value={tickets.filter(t => t.status !== 'completed').length} 
@@ -137,11 +139,24 @@ export function Dashboard() {
 
 function StatCard({ label, value, color }: { label: string, value: number, color?: string }) {
   return (
-    <div className="bg-white p-5 rounded-xl border border-[#e2e8f0] shadow-sm">
-      <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#64748b] mb-1">{label}</p>
-      <p className={cn("text-2xl font-black", color ? `text-[${color}]` : "text-[#0f172a]")} style={{ color }}>{value}</p>
+    <div className="bg-white p-3 lg:p-4 rounded-xl border border-[#e2e8f0] shadow-sm">
+      <p className="text-[9px] lg:text-[10px] font-extrabold uppercase tracking-widest text-[#64748b] mb-0.5">{label}</p>
+      <p className={cn("text-xl lg:text-2xl font-black", color ? `text-[${color}]` : "text-[#0f172a]")} style={{ color }}>{value}</p>
     </div>
   );
+}
+
+function getDuration(start: any, end: any) {
+  if (!start || !end) return null;
+  const s = start?.toDate?.() || new Date(start);
+  const e = end?.toDate?.() || new Date(end);
+  const diffInMs = e.getTime() - s.getTime();
+  const diffInMins = Math.floor(diffInMs / 60000);
+  
+  if (diffInMins < 60) return `${diffInMins}min`;
+  const hours = Math.floor(diffInMins / 60);
+  const mins = diffInMins % 60;
+  return `${hours}h ${mins}m`;
 }
 
 function TicketItem({ ticket, role, onUpdateStatus }: any) {
@@ -170,6 +185,12 @@ function TicketItem({ ticket, role, onUpdateStatus }: any) {
                {ticket.department === 'governance' ? 'Governança' : 'Manutenção'}
              </span>
              {ticket.priority === 'urgent' && <span className="badge badge-urgent text-[9px] lg:text-[10px]">Urgente</span>}
+             {ticket.status === 'completed' && (
+               <div className="flex items-center gap-1.5 text-[9px] lg:text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-widest border border-emerald-100">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Realizado em: {getDuration(ticket.createdAt, ticket.updatedAt)}</span>
+               </div>
+             )}
              <div className="flex items-center gap-1.5 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                 <Clock className="w-3 h-3" />
                 <span>{new Date(ticket.createdAt?.toDate?.() || ticket.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

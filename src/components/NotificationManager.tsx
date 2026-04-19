@@ -70,10 +70,11 @@ export function NotificationManager() {
         // Only notify for NEW tickets (added)
         if (change.type === 'added') {
           const ticket = change.doc.data() as Ticket;
+          const deptLabel = ticket.department === 'governance' ? 'GOV' : 'INFRA';
           
           // Browser Notification
           if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification(`HotelLink: Novo Chamado #${ticket.roomNumber}`, {
+            new Notification(`CHAMADO: ${deptLabel} : ${ticket.roomNumber}`, {
               body: ticket.description,
               tag: 'new-ticket',
               requireInteraction: true // Keep it visible until user acts

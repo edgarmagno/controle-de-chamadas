@@ -55,9 +55,6 @@ export function Settings() {
                <button className="w-full text-left p-4 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold text-sm transition-all">
                   Alterar Senha de Acesso
                </button>
-               <button className="w-full text-left p-4 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold text-sm transition-all">
-                  Solicitar Exclusão de Conta
-               </button>
              </div>
           </Section>
 
