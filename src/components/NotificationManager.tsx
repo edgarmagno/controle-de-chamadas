@@ -11,101 +11,86 @@ const NOTIFICATION_SOUND = 'https://assets.mixkit.co/active_storage/sfx/2869/286
 
 export function NotificationManager() {
   const { profile } = useAuth();
-  const [enabled, setEnabled] = useState(false);
-  const [audioAllowed, setAudioAllowed] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isInitialLoad = useRef(true);
 
+  // Silent Audio & Notification Unlocker
   useEffect(() => {
-    // Basic Notification Permission check
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      if (Notification.permission === 'granted') {
-        setEnabled(true);
+    const unlock = async () => {
+      // 1. Try to unlock Audio
+      if (audioRef.current) {
+        audioRef.current.play()
+          .then(() => {
+            audioRef.current?.pause();
+            if (audioRef.current) audioRef.current.currentTime = 0;
+            // Successfully unlocked audio
+            window.removeEventListener('click', unlock);
+            window.removeEventListener('touchstart', unlock);
+          })
+          .catch(() => {
+            // Still waiting for valid interaction
+          });
       }
-    }
+
+      // 2. Try to request Notification permission silently on click
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        if (Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+      }
+    };
+
+    window.addEventListener('click', unlock);
+    window.addEventListener('touchstart', unlock);
+    
+    return () => {
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('touchstart', unlock);
+    };
   }, []);
 
-  const requestPermission = async () => {
-    if (!('Notification' in window)) return;
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      setEnabled(true);
-      playTestSound();
-    }
-  };
-
-  const playTestSound = () => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
-      setAudioAllowed(true);
-    }
-  };
-
   useEffect(() => {
-    if (!profile || !enabled) return;
+    if (!profile) return;
 
-    // Listen only for relevant department or all if reception
     const department = profile.role === 'reception' ? undefined : profile.role as Department;
     
-    let q = query(collection(db, 'tickets'), orderBy('createdAt', 'desc'), limit(10));
+    let q = query(collection(db, 'tickets'), orderBy('createdAt', 'desc'), limit(1));
     if (department) {
       q = query(q, where('department', '==', department));
     }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      // Safety: Don't notify on the very first data load of existing tickets
       if (isInitialLoad.current) {
         isInitialLoad.current = false;
         return;
       }
 
       snapshot.docChanges().forEach((change) => {
+        // Only notify for NEW tickets (added)
         if (change.type === 'added') {
           const ticket = change.doc.data() as Ticket;
           
-          // Trigger notification
-          const title = `Novo Chamado: Quarto #${ticket.roomNumber}`;
-          const options = {
-            body: ticket.description,
-            icon: '/favicon.ico', // Fallback, could be a specific icon
-            tag: 'new-ticket'
-          };
-
-          if (Notification.permission === 'granted') {
-            new Notification(title, options);
+          // Browser Notification
+          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification(`HotelLink: Novo Chamado #${ticket.roomNumber}`, {
+              body: ticket.description,
+              tag: 'new-ticket',
+              requireInteraction: true // Keep it visible until user acts
+            });
           }
 
-          // Trigger Sound
+          // Play Sound
           if (audioRef.current) {
-            audioRef.current.play().catch(() => {
-               console.warn("Audio blocked by browser. Interaction required.");
-               setAudioAllowed(false);
-            });
+            audioRef.current.currentTime = 0;
+            audioRef.current.play().catch(e => console.warn("Audio blocked:", e));
           }
         }
       });
     });
 
     return () => unsubscribe();
-  }, [profile, enabled]);
+  }, [profile]);
 
-  return (
-    <div className="fixed bottom-24 right-6 z-50 lg:bottom-6">
-      <audio ref={audioRef} src={NOTIFICATION_SOUND} preload="auto" />
-      
-      {!enabled || !audioAllowed ? (
-        <button 
-          onClick={requestPermission}
-          className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce text-xs lg:text-sm"
-        >
-          {!enabled ? <BellOff className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          <span>Ativar Alertas Sonoros</span>
-        </button>
-      ) : (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 px-3 py-1.5 rounded-full flex items-center gap-2 text-[10px] font-black uppercase tracking-widest backdrop-blur-sm shadow-sm">
-           <Volume2 className="w-3 h-3" />
-           <span>Alertas Ativos</span>
-        </div>
-      )}
-    </div>
-  );
+  return <audio ref={audioRef} src={NOTIFICATION_SOUND} preload="auto" className="hidden" aria-hidden="true" />;
 }
