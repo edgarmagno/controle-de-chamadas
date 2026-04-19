@@ -3,6 +3,7 @@ import { LogOut, Hotel, LayoutDashboard, Sparkles, Wrench, Settings, FileText, H
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../lib/utils';
 import { NavLink, Link } from 'react-router-dom';
+import { NotificationManager } from './NotificationManager';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { profile, logout } = useAuth();
@@ -95,6 +96,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8">
           {children}
         </main>
+
+        <NotificationManager />
 
         {/* Bottom Navigation - Mobile */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-[#e2e8f0] px-6 flex items-center justify-between z-40 bg-white/80 backdrop-blur-lg">

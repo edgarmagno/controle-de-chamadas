@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             let targetRole: UserRole = data.role;
             if (user.email === 'infra@bluetree.com.br') targetRole = 'maintenance';
             if (user.email === 'gov@bluetree.com.br') targetRole = 'governance';
+            if (user.email === 'recep@bluetree.com.br') targetRole = 'reception';
             
             if (targetRole !== data.role) {
               await setDoc(docRef, { role: targetRole }, { merge: true });
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             let initialRole: UserRole = 'reception';
             if (user.email === 'infra@bluetree.com.br') initialRole = 'maintenance';
             if (user.email === 'gov@bluetree.com.br') initialRole = 'governance';
+            if (user.email === 'recep@bluetree.com.br') initialRole = 'reception';
 
             const newProfile: UserProfile = {
               uid: user.uid,

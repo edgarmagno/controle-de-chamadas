@@ -31,7 +31,20 @@ export function Settings() {
             <div className="space-y-4">
               <Toggle label="Notificações via Navegador" checked />
               <Toggle label="Alertas de Chamados Urgentes" checked />
-              <Toggle label="Relatório Semanal por E-mail" />
+              <div className="pt-2">
+                 <button 
+                  onClick={() => {
+                    if (Notification.permission === 'default') {
+                      Notification.requestPermission();
+                    } else if (Notification.permission === 'granted') {
+                      new Notification('Teste de Notificação', { body: 'Este é um alerta de teste do HotelLink.' });
+                    }
+                  }}
+                  className="text-xs font-black uppercase text-blue-600 hover:text-blue-700"
+                 >
+                   Testar Notificação Visual
+                 </button>
+              </div>
             </div>
           </Section>
         </div>
