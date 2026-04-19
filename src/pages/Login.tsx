@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Hotel, Key, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
 export function Login() {
-  const { signIn } = useAuth();
+  const { user, profile, signIn } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Proactive redirection if already logged in
+  useEffect(() => {
+    if (user && profile) {
+      navigate('/', { replace: true });
+    }
+  }, [user, profile, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,6 +25,8 @@ export function Login() {
     setIsSubmitting(true);
     try {
       await signIn(email, password);
+      // Explicit navigation after successful sign-in to avoid staying on login page
+      navigate('/', { replace: true });
     } catch (err: any) {
       if (err.code === 'auth/operation-not-allowed') {
         setError('O login por e-mail não foi ativado no Console do Firebase.');

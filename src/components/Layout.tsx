@@ -55,29 +55,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+      <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden relative">
         {/* Header */}
-        <header className="h-[72px] bg-white border-b border-[#e2e8f0] px-8 flex items-center justify-between shrink-0">
-          <div>
-            <h2 className="text-lg font-bold text-[#0f172a]">Central de Chamadas</h2>
-            <p className="text-xs text-[#64748b] font-medium uppercase tracking-wider">Gerenciamento em tempo real de ordens de serviço</p>
+        <header className="h-[72px] bg-white border-b border-[#e2e8f0] px-4 lg:px-8 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 lg:hidden">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Hotel className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[#0f172a] font-extrabold text-lg tracking-tight">HotelLink</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end mr-2">
+          <div className="hidden lg:block">
+            <h2 className="text-lg font-bold text-[#0f172a]">Central de Chamadas</h2>
+            <p className="text-xs text-[#64748b] font-medium uppercase tracking-wider">Gerenciamento operacional em tempo real</p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex flex-col items-end mr-1">
               <span className="text-sm font-bold text-[#0f172a]">{profile?.name}</span>
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#64748b]">
-                {profile?.role === 'reception' ? 'Recepção Central' : 
+                {profile?.role === 'reception' ? 'Recepção' : 
                  profile?.role === 'governance' ? 'Governança' : 'Manutenção'}
               </span>
             </div>
-            <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center font-bold text-slate-700 text-sm">
-              {profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?' }
+            <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center font-bold text-slate-700 text-sm overflow-hidden">
+               {profile?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?' }
             </div>
             
             <button 
               onClick={() => logout()}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <LogOut className="w-5 h-5" />
             </button>
@@ -85,10 +92,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Content Body */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8">
           {children}
         </main>
+
+        {/* Bottom Navigation - Mobile */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-[#e2e8f0] px-6 flex items-center justify-between z-40 bg-white/80 backdrop-blur-lg">
+          <MobileNavItem icon={LayoutDashboard} to="/" />
+          <MobileNavItem icon={Sparkles} to="/?dept=governance" />
+          <MobileNavItem icon={Wrench} to="/?dept=maintenance" />
+          <MobileNavItem icon={House} to="/rooms" />
+          <MobileNavItem icon={Settings} to="/settings" />
+        </nav>
       </div>
     </div>
+  );
+}
+
+function MobileNavItem({ icon: Icon, to }: { icon: any, to: string }) {
+  return (
+    <NavLink 
+      to={to}
+      className={({ isActive }) => cn(
+        "p-3 rounded-2xl transition-all",
+        isActive 
+          ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 -translate-y-2 scale-110" 
+          : "text-slate-400 hover:text-blue-600"
+      )}
+    >
+      <Icon className="w-6 h-6" />
+    </NavLink>
   );
 }

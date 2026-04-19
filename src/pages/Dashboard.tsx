@@ -153,24 +153,24 @@ function TicketItem({ ticket, role, onUpdateStatus }: any) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="bg-white border-b border-[#e2e8f0] px-6 py-4 flex flex-col lg:flex-row lg:items-center gap-4 hover:bg-slate-50/50 transition-all first:rounded-t-xl last:rounded-b-xl last:border-b-0"
+      className="bg-white border-b border-[#e2e8f0] px-4 lg:px-6 py-4 flex flex-col lg:flex-row lg:items-center gap-4 hover:bg-slate-50/50 transition-all first:rounded-t-xl last:rounded-b-xl last:border-b-0"
     >
-      <div className="flex items-center gap-6 flex-1">
-        <div className="w-10 text-center shrink-0">
-          <span className="font-black text-slate-800">#{ticket.roomNumber}</span>
+      <div className="flex items-start lg:items-center gap-4 lg:gap-6 flex-1">
+        <div className="w-10 lg:w-12 h-10 lg:h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 shrink-0">
+          <span className="font-black text-slate-800 text-sm lg:text-base">#{ticket.roomNumber}</span>
         </div>
         
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-slate-900 truncate">{ticket.description}</p>
-          <div className="flex items-center gap-3 mt-1">
+          <p className="font-bold text-slate-900 text-sm lg:text-base truncate">{ticket.description}</p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
              <span className={cn(
-               "badge",
+               "badge text-[9px] lg:text-[10px]",
                ticket.department === 'governance' ? "badge-governance" : "badge-maintenance"
              )}>
                {ticket.department === 'governance' ? 'Governança' : 'Manutenção'}
              </span>
-             {ticket.priority === 'urgent' && <span className="badge badge-urgent">Urgente</span>}
-             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+             {ticket.priority === 'urgent' && <span className="badge badge-urgent text-[9px] lg:text-[10px]">Urgente</span>}
+             <div className="flex items-center gap-1.5 text-[9px] lg:text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                 <Clock className="w-3 h-3" />
                 <span>{new Date(ticket.createdAt?.toDate?.() || ticket.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
              </div>
@@ -178,19 +178,21 @@ function TicketItem({ ticket, role, onUpdateStatus }: any) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between lg:justify-end gap-6 border-t lg:border-t-0 pt-3 lg:pt-0">
-        <div className="flex items-center gap-2">
-           <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between lg:justify-end gap-4 border-t lg:border-t-0 pt-3 lg:pt-0 mt-2 lg:mt-0">
+        <div className="flex items-center gap-2 px-1 lg:px-0">
+           <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 overflow-hidden">
              {(ticket.assignedTo || 'AP')[0]}
            </div>
-           <span className="text-xs font-bold text-slate-600">{ticket.assignedTo || 'Aguardando'}</span>
+           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight truncate max-w-[100px]">
+             {ticket.assignedTo || 'Aguardando'}
+           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {ticket.status === 'open' && !isReception && (
             <button 
               onClick={() => onUpdateStatus('in-progress')}
-              className="px-4 py-2 bg-[#2563eb] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[#1e40af] transition-all shadow-md shadow-blue-500/10"
+              className="flex-1 lg:flex-none px-6 py-2.5 bg-[#2563eb] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1e40af] transition-all shadow-lg shadow-blue-500/20 active:scale-95"
             >
               Atender
             </button>
@@ -198,13 +200,13 @@ function TicketItem({ ticket, role, onUpdateStatus }: any) {
           {ticket.status === 'in-progress' && !isReception && (
             <button 
                onClick={() => onUpdateStatus('completed')}
-               className="px-4 py-2 bg-[#10b981] text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-[#059669] transition-all shadow-md shadow-emerald-500/10"
+               className="flex-1 lg:flex-none px-6 py-2.5 bg-[#10b981] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#059669] transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
             >
               Concluir
             </button>
           )}
           <div className={cn(
-            "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest",
+            "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2",
             ticket.status === 'completed' ? "text-emerald-500" : "text-blue-500"
           )}>
             <div className={cn("w-1.5 h-1.5 rounded-full", ticket.status === 'completed' ? "bg-emerald-500" : "bg-blue-500 animate-pulse")} />
@@ -237,7 +239,7 @@ function TicketModal({ onClose, onSubmit }: { onClose: () => void, onSubmit: (da
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-white w-full max-w-lg p-10 rounded-[32px] border border-[#e2e8f0] relative z-10 shadow-2xl space-y-8"
+        className="bg-white w-full max-w-lg p-6 lg:p-10 rounded-[32px] border border-[#e2e8f0] relative z-10 shadow-2xl space-y-6 lg:space-y-8 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
           <div className="space-y-1">

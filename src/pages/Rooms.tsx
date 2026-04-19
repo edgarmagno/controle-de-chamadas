@@ -66,7 +66,8 @@ export function Rooms() {
       </div>
 
       <div className="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        {/* Desktop View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-[#e2e8f0]">
@@ -125,6 +126,48 @@ export function Rooms() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile View */}
+        <div className="lg:hidden divide-y divide-[#e2e8f0]">
+          {loading ? (
+            <div className="p-10 text-center text-slate-400">Carregando...</div>
+          ) : rooms.length === 0 ? (
+            <div className="p-10 text-center flex flex-col items-center gap-2 opacity-30">
+              <Hotel className="w-10 h-10" />
+              <p className="font-bold">Nenhum quarto cadastrado</p>
+            </div>
+          ) : (
+            rooms.map(room => (
+              <div key={room.id} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-slate-50 rounded-xl flex flex-col items-center justify-center border border-slate-100">
+                    <span className="text-xs font-black text-slate-900 leading-none">#{room.number}</span>
+                    <span className="text-[8px] font-black text-slate-400 uppercase">{room.floor}º</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900 text-sm">{room.type}</p>
+                    <span className={cn(
+                        "text-[10px] font-black uppercase tracking-widest",
+                        room.status === 'available' ? "text-emerald-500" :
+                        room.status === 'occupied' ? "text-sky-500" : "text-slate-400"
+                    )}>
+                      {room.status === 'available' ? 'Disponível' : 
+                       room.status === 'occupied' ? 'Ocupado' : 'Outro'}
+                    </span>
+                  </div>
+                </div>
+                {isReception && (
+                  <button 
+                    onClick={() => handleDeleteRoom(room.id)}
+                    className="p-3 text-red-300 hover:text-red-500"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       <AnimatePresence>
@@ -159,7 +202,7 @@ function RoomModal({ onClose, onSubmit }: { onClose: () => void, onSubmit: (data
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-white w-full max-w-md p-10 rounded-[32px] border border-[#e2e8f0] relative z-10 shadow-2xl space-y-8"
+        className="bg-white w-full max-w-md p-6 lg:p-10 rounded-[32px] border border-[#e2e8f0] relative z-10 shadow-2xl space-y-6 lg:space-y-8 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
           <div className="space-y-1">
